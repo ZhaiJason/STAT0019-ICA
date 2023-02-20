@@ -1,0 +1,20 @@
+model {
+	for (i in 1:N) {
+		y[i] ~ dnorm(mu[i], tau)
+		mu[i] <- alpha + beta * X[i]
+		# In JAGS, the above 2 lines can be combined to:
+		# y[i] ~ dnorm(alpha + beta * X[i], tau)
+	}
+	
+	prec <- 1 / pow(h, 2)
+	alpha ~ dnorm(0, prec)
+	beta ~ dnorm(0, prec)
+	# To speed up mixing of chains, can use blocking (section 4.5.1):
+	# coef[1:2] ~ dnorm(m[1:2], P[1:2, 1:2]) # Specify m and P in R, see book for details
+	# alpha <- coef[1]
+	# beta <- coef[2]
+	
+	lsigma ~ dunif(-k, k)
+	sigma <- exp(lsigma)
+	tau <- pow(sigma, -2)
+}
