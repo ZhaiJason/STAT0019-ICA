@@ -73,28 +73,34 @@ model.bugs <- R2OpenBUGS::bugs(
 	# debug = TRUE
 )
 
-model.jags <- R2jags::jags(
-	data = data, inits = NULL, parameters.to.save = params, model.file = filein,
-	n.chains = 2,
-	n.iter = 10000,
-	n.burnin = 100,
-	n.thin = 1,
-	DIC = TRUE
-)
+# model.jags <- R2jags::jags(
+# 	data = data, inits = NULL, parameters.to.save = params, model.file = filein,
+# 	n.chains = 2,
+# 	n.iter = 10000,
+# 	n.burnin = 100,
+# 	n.thin = 1,
+# 	DIC = TRUE
+# )
 
 print(model.bugs)
-print(model.jags)
+# print(model.jags)
 
-# e <- model.bugs$sims.list$e
-# c <- model.bugs$sims.list$c
+# CEA ==========================================================================
 
 p1 <- model.bugs$sims.list$p1
 p2 <- model.bugs$sims.list$p2
 l0 <- model.bugs$sims.list$l0
 l1 <- model.bugs$sims.list$l1
 
+# Or read output from model.jags
+# p1 <- model.jags$BUGSoutput$sims.list$p1
+# p2 <- model.jags$BUGSoutput$sims.list$p2
+# l0 <- model.jags$BUGSoutput$sims.list$l0
+# l1 <- model.jags$BUGSoutput$sims.list$l1
+
 # Population average cost & benefits
 c <- e <- matrix(nrow = model.bugs$n.sims, ncol = 2)
+# c <- e <- matrix(nrow = model.jags$BUGSoutput$n.sims, ncol = 2) # Use this line if using model.jags
 c[ ,1] <- p1 * (168.19 * l1) + (1 - p1) * (113.61 * l0)
 c[ ,2] <- p2 * (168.19 * l1) + (1 - p2) * (113.61 * l0) + 201.47
 e[ ,1] <- p1 * (l1 * 0.0013151 + (365 - l1)) + (1 - p1) * (l0 * 0.0025205 + (365 - l0))
@@ -103,6 +109,3 @@ e[ ,2] <- p2 * (l1 * 0.0013151 + (365 - l1)) + (1 - p2) * (l0 * 0.0025205 + (365
 he <- BCEA::bcea(e, c, ref = 2, c("status quo","treatment"), Kmax = 1000)
 
 BCEA::ceplane.plot(he, wtp = 100)
-
-# print(model, digits = 3, intervals = c(0.025, 0.975)) # Interval changes the output quantiles, this may require load bmhe package
-
