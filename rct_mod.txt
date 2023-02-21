@@ -10,7 +10,6 @@ model {
 	alpha ~ dnorm(mu.alpha, tau.alpha)
 	delta ~ dnorm(mu.delta, tau.delta)
 	
-	
 	rho <- exp(delta)
 	p1 ~ dbeta(shape1.p1, shape2.p1)
 	p2 <- (rho * p1 / (1 - p1)) / (1 + rho * p1 / (1 - p1))
@@ -18,10 +17,5 @@ model {
 	# Length of stay in hospital
 	l0 ~ dnorm(mu.l0, tau.l0)
 	l1 ~ dnorm(mu.l1, tau.l1)
-	
-	# Population average cost & benefits
-	# for (t in 1:2) {
-	# 	e[t] <- p1 * ()
-	# }
 	
 }
