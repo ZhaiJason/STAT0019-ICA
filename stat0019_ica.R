@@ -63,44 +63,45 @@ params <- c(
 
 # Gibbs Sampling ===============================================================
 
-model.bugs <- R2OpenBUGS::bugs(
-	data = data, inits = NULL, parameters.to.save = params, model.file = filein,
-	n.chains = 2,
-	n.iter = 10000,
-	n.burnin = 100,
-	n.thin = 1,
-	DIC = TRUE,
-	# debug = TRUE
-)
-
-# model.jags <- R2jags::jags(
+# model.bugs <- R2OpenBUGS::bugs(
 # 	data = data, inits = NULL, parameters.to.save = params, model.file = filein,
 # 	n.chains = 2,
 # 	n.iter = 10000,
 # 	n.burnin = 100,
 # 	n.thin = 1,
-# 	DIC = TRUE
+# 	DIC = TRUE,
+# 	# debug = TRUE
 # )
 
-print(model.bugs)
-# print(model.jags)
+model.jags <- R2jags::jags(
+	data = data, inits = NULL, parameters.to.save = params, model.file = filein,
+	n.chains = 2,
+	n.iter = 10000,
+	n.burnin = 100,
+	n.thin = 1,
+	DIC = TRUE
+)
+
+# print(model.bugs)
+print(model.jags)
 
 # CEA ==========================================================================
 
-p1 <- model.bugs$sims.list$p1
-p2 <- model.bugs$sims.list$p2
-l0 <- model.bugs$sims.list$l0
-l1 <- model.bugs$sims.list$l1
+# Read output from model.bugs
+# p1 <- model.bugs$sims.list$p1
+# p2 <- model.bugs$sims.list$p2
+# l0 <- model.bugs$sims.list$l0
+# l1 <- model.bugs$sims.list$l1
 
 # Or read output from model.jags
-# p1 <- model.jags$BUGSoutput$sims.list$p1
-# p2 <- model.jags$BUGSoutput$sims.list$p2
-# l0 <- model.jags$BUGSoutput$sims.list$l0
-# l1 <- model.jags$BUGSoutput$sims.list$l1
+p1 <- model.jags$BUGSoutput$sims.list$p1
+p2 <- model.jags$BUGSoutput$sims.list$p2
+l0 <- model.jags$BUGSoutput$sims.list$l0
+l1 <- model.jags$BUGSoutput$sims.list$l1
 
 # Population average cost & benefits
-c <- e <- matrix(nrow = model.bugs$n.sims, ncol = 2)
-# c <- e <- matrix(nrow = model.jags$BUGSoutput$n.sims, ncol = 2) # Use this line if using model.jags
+# c <- e <- matrix(nrow = model.bugs$n.sims, ncol = 2)
+c <- e <- matrix(nrow = model.jags$BUGSoutput$n.sims, ncol = 2) # Use this line if using model.jags
 c[ ,1] <- p1 * (168.19 * l1) + (1 - p1) * (113.61 * l0)
 c[ ,2] <- p2 * (168.19 * l1) + (1 - p2) * (113.61 * l0) + 201.47
 e[ ,1] <- p1 * (l1 * 0.0013151 + (365 - l1)) + (1 - p1) * (l0 * 0.0025205 + (365 - l0))
