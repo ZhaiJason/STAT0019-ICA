@@ -11,7 +11,7 @@ rm(rct_data)
 
 # Gibbs Sampling ===============================================================
 
-## Model Setup information ------------------------------------------------------
+## Model Setup information -----------------------------------------------------
 
 # Effectiveness study data
 y1 <- sum(rct.1)
@@ -118,10 +118,10 @@ c[ ,2] <- p2 * (168.19 * l1) + (1 - p2) * (113.61 * l0) + 201.47
 e[ ,1] <- (p1 * (l1 * 0.0013151 + (365 - l1)) + (1 - p1) * (l0 * 0.0025205 + (365 - l0)))
 e[ ,2] <- (p2 * (l1 * 0.0013151 + (365 - l1)) + (1 - p2) * (l0 * 0.0025205 + (365 - l0)))
 
-
 library(BCEA)
-he <- BCEA::bcea(e, c, ref = 2, c("status quo", "treatment"), Kmax = 0)
-BCEA::ceplane.plot(he, wtp = 100)
-BCEA::eib.plot(he, plot.cri = TRUE)
-BCEA::contour(he)
+he <- bcea(e, c, ref = 2, c("status quo", "treatment"), Kmax = 100)
+plot(he)
+ceplane.plot(he, wtp = 100)
+eib.plot(he, plot.cri = TRUE)
+contour(he)
 summary(he)

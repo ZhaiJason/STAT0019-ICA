@@ -48,6 +48,12 @@ $$
 
 #### Length of Staying in Hospital
 
-It's intuitive that the length in time is non-negative. Considering the mean length of stay in hospital for people without severe complications is 4.36 days with a standard deviation of 1.8 days, modelling using symmetric distributions (e.g. normal) may cause bias due to the allowance of negativity. Therefore, we decided to use Gamma distribution to model this quantity.
+It's intuitive that the length in time is non-negative, and considering the mean length of stay in hospital for people without severe complications is 4.36 days with a standard deviation of 1.8 days (close to zero), modelling using symmetric distributions (e.g. normal) may cause bias due to the allowance of negativity. Therefore, we decided to use Gamma distribution to model this quantity.
 
-We know that
+We know that for a $\text{Gamma}(\alpha, \beta)$ distribution, the mean and standard deviation
+
+In line $x = 2$
+
+$$
+
+$$
