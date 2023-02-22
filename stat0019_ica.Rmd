@@ -33,7 +33,7 @@ $$
 \end{align}
 $$
 
-Monetary Net Benefit $u(e,c;t) = nb_t = k\mu_{et} - \mu_{ct}$ k is the "willingess to pay", such as the "cost per extra unit of effectiveness gained".
+Monetary Net Benefit $u(e,c;t) = nb_t = k\mu_{et} - \mu_{ct}$ k is the "willingness to pay", such as the "cost per extra unit of effectiveness gained".
 
 The monetary net benefit represents the value of an intervention in monetary terms when a willingness to pay threshold for a unit of benefit (for example a measure of health outcome or QALY) and cost is known. when $t = 1$:
 

@@ -70,44 +70,44 @@ params <- c(
 
 ## Running Model ---------------------------------------------------------------
 
-model.bugs <- R2OpenBUGS::bugs(
-	data = data, inits = NULL, parameters.to.save = params, model.file = filein,
-	n.chains = 2,
-	n.iter = 20000,
-	n.burnin = 100,
-	n.thin = 1,
-	DIC = TRUE,
-	# debug = TRUE
-)
-print(model.bugs)
-
-# model.jags <- R2jags::jags(
+# model.bugs <- R2OpenBUGS::bugs(
 # 	data = data, inits = NULL, parameters.to.save = params, model.file = filein,
 # 	n.chains = 2,
 # 	n.iter = 20000,
 # 	n.burnin = 100,
 # 	n.thin = 1,
-# 	DIC = TRUE
+# 	DIC = TRUE,
+# 	# debug = TRUE
 # )
-# print(model.jags)
+# print(model.bugs)
+
+model.jags <- R2jags::jags(
+	data = data, inits = NULL, parameters.to.save = params, model.file = filein,
+	n.chains = 2,
+	n.iter = 20000,
+	n.burnin = 100,
+	n.thin = 1,
+	DIC = TRUE
+)
+print(model.jags)
 
 # CEA ==========================================================================
 
 ## Reading output --------------------------------------------------------------
 
 # Read output from model.bugs
-p1 <- model.bugs$sims.list$p1
-p2 <- model.bugs$sims.list$p2
-l0 <- model.bugs$sims.list$l0
-l1 <- model.bugs$sims.list$l1
-n.sims <- model.bugs$n.sims
+# p1 <- model.bugs$sims.list$p1
+# p2 <- model.bugs$sims.list$p2
+# l0 <- model.bugs$sims.list$l0
+# l1 <- model.bugs$sims.list$l1
+# n.sims <- model.bugs$n.sims
 
 # Or read output from model.jags
-# p1 <- model.jags$BUGSoutput$sims.list$p1
-# p2 <- model.jags$BUGSoutput$sims.list$p2
-# l0 <- model.jags$BUGSoutput$sims.list$l0
-# l1 <- model.jags$BUGSoutput$sims.list$l1
-# n.sims <- model.jags$BUGSoutput$n.sims
+p1 <- model.jags$BUGSoutput$sims.list$p1
+p2 <- model.jags$BUGSoutput$sims.list$p2
+l0 <- model.jags$BUGSoutput$sims.list$l0
+l1 <- model.jags$BUGSoutput$sims.list$l1
+n.sims <- model.jags$BUGSoutput$n.sims
 
 ## Analysis with BCEA ----------------------------------------------------------
 
@@ -120,7 +120,7 @@ e[ ,2] <- (p2 * (l1 * 0.0013151 + (365 - l1)) + (1 - p2) * (l0 * 0.0025205 + (36
 
 
 library(BCEA)
-he <- BCEA::bcea(e, c, ref = 2, c("status quo", "treatment"), Kmax = 100)
+he <- BCEA::bcea(e, c, ref = 2, c("status quo", "treatment"), Kmax = 0)
 BCEA::ceplane.plot(he, wtp = 100)
 BCEA::eib.plot(he, plot.cri = TRUE)
 BCEA::contour(he)
