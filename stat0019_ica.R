@@ -27,20 +27,17 @@ shape1.p1 <- round(mu.p1 * ((1 - mu.p1) * mu.p1 / sd.p1^2 - 1)) # alpha
 shape2.p1 <- round((1 - mu.p1) * ((1 - mu.p1) * mu.p1 / sd.p1^2 - 1)) # beta
 rm(mu.p1, sd.p1)
 
-x <- seq(0,0.2,0.001)
-plot(x, dbeta(x, shape1.p1, shape2.p1), type = "l")
+# x <- seq(0,0.2,0.001)
+# plot(x, dbeta(x, shape1.p1, shape2.p1), type = "l")
 # plot(x, dbeta(x, 29, 320), type = "l") # Eric's prior
-abline(v = c(0.04, 0.08, 0.12))
-pbeta(0.12, shape1.p1, shape2.p1) - pbeta(0.04, shape1.p1, shape2.p1)
+# abline(v = c(0.04, 0.08, 0.12))
+# pbeta(0.12, shape1.p1, shape2.p1) - pbeta(0.04, shape1.p1, shape2.p1)
 
 # Unstructured effects (using heavy tailed normal prior)
 mu.alpha <- 0
 mu.delta <- 0
-sd.alpha <- sqrt(10)
-sd.delta <- sqrt(10)
-tau.alpha <- 1 / sd.alpha^2
-tau.delta <- 1 / sd.delta^2
-rm(sd.alpha, sd.delta)
+tau.alpha <- 1e-2
+tau.delta <- 1e-2
 
 # Length of staying (using Gamma with specified parameters)
 mu.l0 <- 4.36
@@ -70,44 +67,45 @@ params <- c(
 
 ## Running Model ---------------------------------------------------------------
 
-# model.bugs <- R2OpenBUGS::bugs(
-# 	data = data, inits = NULL, parameters.to.save = params, model.file = filein,
-# 	n.chains = 2,
-# 	n.iter = 20000,
-# 	n.burnin = 100,
-# 	n.thin = 1,
-# 	DIC = TRUE,
-# 	# debug = TRUE
-# )
-# print(model.bugs)
-
-model.jags <- R2jags::jags(
+model.bugs <- R2OpenBUGS::bugs(
 	data = data, inits = NULL, parameters.to.save = params, model.file = filein,
 	n.chains = 2,
-	n.iter = 20000,
+	n.iter = 10000,
 	n.burnin = 100,
 	n.thin = 1,
 	DIC = TRUE
+	# bugs.seed = 3
+	# debug = TRUE
 )
-print(model.jags)
+print(model.bugs)
+
+# model.jags <- R2jags::jags(
+# 	data = data, inits = NULL, parameters.to.save = params, model.file = filein,
+# 	n.chains = 2,
+# 	n.iter = 10000,
+# 	n.burnin = 100,
+# 	n.thin = 1,
+# 	DIC = TRUE
+# )
+# print(model.jags)
 
 # CEA ==========================================================================
 
 ## Reading output --------------------------------------------------------------
 
 # Read output from model.bugs
-# p1 <- model.bugs$sims.list$p1
-# p2 <- model.bugs$sims.list$p2
-# l0 <- model.bugs$sims.list$l0
-# l1 <- model.bugs$sims.list$l1
-# n.sims <- model.bugs$n.sims
+p1 <- model.bugs$sims.list$p1
+p2 <- model.bugs$sims.list$p2
+l0 <- model.bugs$sims.list$l0
+l1 <- model.bugs$sims.list$l1
+n.sims <- model.bugs$n.sims
 
 # Or read output from model.jags
-p1 <- model.jags$BUGSoutput$sims.list$p1
-p2 <- model.jags$BUGSoutput$sims.list$p2
-l0 <- model.jags$BUGSoutput$sims.list$l0
-l1 <- model.jags$BUGSoutput$sims.list$l1
-n.sims <- model.jags$BUGSoutput$n.sims
+# p1 <- model.jags$BUGSoutput$sims.list$p1
+# p2 <- model.jags$BUGSoutput$sims.list$p2
+# l0 <- model.jags$BUGSoutput$sims.list$l0
+# l1 <- model.jags$BUGSoutput$sims.list$l1
+# n.sims <- model.jags$BUGSoutput$n.sims
 
 ## Analysis with BCEA ----------------------------------------------------------
 
@@ -117,11 +115,13 @@ c[ ,1] <- p1 * (168.19 * l1) + (1 - p1) * (113.61 * l0)
 c[ ,2] <- p2 * (168.19 * l1) + (1 - p2) * (113.61 * l0) + 201.47
 e[ ,1] <- (p1 * (l1 * 0.0013151 + (365 - l1)) + (1 - p1) * (l0 * 0.0025205 + (365 - l0)))
 e[ ,2] <- (p2 * (l1 * 0.0013151 + (365 - l1)) + (1 - p2) * (l0 * 0.0025205 + (365 - l0)))
+# c <- c / 365
+# e <- e / 365
 
 library(BCEA)
 he <- bcea(e, c, ref = 2, c("status quo", "treatment"), Kmax = 100)
-plot(he)
+# plot(he)
 ceplane.plot(he, wtp = 100)
-eib.plot(he, plot.cri = TRUE)
-contour(he)
-summary(he)
+# eib.plot(he, plot.cri = TRUE)
+# contour(he)
+# summary(he)
