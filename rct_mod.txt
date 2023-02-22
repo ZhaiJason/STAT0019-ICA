@@ -15,7 +15,7 @@ model {
 	p2 <- (rho * p1 / (1 - p1)) / (1 + rho * p1 / (1 - p1))
 	
 	# Length of stay in hospital
-	l0 ~ dnorm(mu.l0, tau.l0)
-	l1 ~ dnorm(mu.l1, tau.l1)
+	l0 ~ dgamma(alpha.l0, beta.l0)
+	l1 ~ dgamma(alpha.l1, beta.l1)
 	
 }
