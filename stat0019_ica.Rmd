@@ -35,7 +35,7 @@ $$
 
 Monetary Net Benefit $u(e,c;t) = nb_t = k\mu_{et} - \mu_{ct}$ k is the "willingess to pay", such as the "cost per extra unit of effectiveness gained".
 
-The monetary net benefit represents the value of an intervention in monetary terms when a willingness to pay threshold for a unit of benefit (for example a measure of health outcome or QALY) and cost is known. when t = 1
+The monetary net benefit represents the value of an intervention in monetary terms when a willingness to pay threshold for a unit of benefit (for example a measure of health outcome or QALY) and cost is known. when $t = 1$:
 
 $$
 \begin{align}
@@ -46,4 +46,8 @@ $$
 
 ## Question 2
 
-### Length of Staying in Hospital
+#### Length of Staying in Hospital
+
+It's intuitive that the length in time is non-negative. Considering the mean length of stay in hospital for people without severe complications is 4.36 days with a standard deviation of 1.8 days, modelling using symmetric distributions (e.g. normal) may cause bias due to the allowance of negativity. Therefore, we decided to use Gamma distribution to model this quantity.
+
+We know that
