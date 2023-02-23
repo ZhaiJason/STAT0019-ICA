@@ -11,49 +11,102 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Question 1
 
-average QALYs: $\mu_{et}$ is the average of the effectiveness conditional on the treatment group $t$, where $t \in \{1=\text{status quo} = \text{no prophylaxis},2= \text{active intervention} = \text{antibiotics prophylaxis}\}$.
+We have two treatment arms where $t=1=\text{status quo}=\text{no prophylaxis}$ and $t=2=\text{active intervention}=\text{antibiotics prophylaxis}$.
 
-average cost: $\mu_{ct}$ is the average of the cost conditional on the treatment group $t$, which $t \in \{1=\text{status quo} = \text{no prophylaxis},2= \text{active intervention} = \text{antibiotics prophylaxis}\}$.
+For people with condition $s$, where $s=1$ represents experienced severe complication and $s=0$ not experienced, the lengths of stay in hospital is denoted $l_s$.
 
-for $t = 1 =\text{status quo} = \text{no prophylaxis}$:
+For treatment arm $t$, the average cost and average QALYs are denoted $\mu_{ct}$ and $\mu_{et}$, respectively; the probability of severe complications is denoted $p_t$; and the monetary net benefit function is denoted $\text{NB}_t(\boldsymbol{\theta})$, where $\boldsymbol{\theta}=(e,c;p_t,l_s,k)$ and $k$ is the willingness to pay (i.e. the maximum amount people are willing to contribute in order to gain one extra unit of QALY).
+
+#### 1.1 Average Cost & Average QALYs
+
+As instructed, we model $\mu_{ct}$ and $\mu_{et}$, for $t=1$, as follows:
 
 $$
 \begin{align}
-\mu_{e1} &= p1 * (l1 * 0.0013151 + (365 - l1)) + (1 - p1) * (l0 * 0.0025205 + (365 - l0)) \\
-\mu_{c1} &= p1 * (168.19 * l1) + (1 - p1) * (113.61 * l0)
+\mu_{e1} &= \frac{1}{365}\left[p_1\times(l_1\times0.0013151 + (365 - l_1)) + (1 - p_1)\times(l_0\times0.0025205 + (365 - l_0))\right] \\
+\mu_{c1} &= p_1\times(l_1\times168.19) + (1 - p_1)\times(l_0\times113.61)
 \end{align}
 $$
 
-for t = 2= active intervention = antibiotics prophylaxis
+And for $t=2$, as follows:
 
 $$
 \begin{align}
-\mu_{e2} &= p2 * (l1 * 0.0013151 + (365 - l1)) + (1 - p2) * (l0 * 0.0025205 + (365 - l0)) \\
-\mu_{c2} &= p2 * (168.19 * l1) + (1 - p2) * (113.61 * l0) + 201.47
+\mu_{e2} &= \frac{1}{365}\left[p_2\times(l_1\times0.0013151 + (365-l_1)) + (1-p_2)\times(l_0\times0.0025205 + (365 - l_0))\right] \\
+\mu_{c2} &= p_2\times(l_1\times168.19)+(1-p_2)\times(l_0\times113.61)  + 201.47
 \end{align}
 $$
 
-Monetary Net Benefit $u(e,c;t) = nb_t = k\mu_{et} - \mu_{ct}$ k is the "willingness to pay", such as the "cost per extra unit of effectiveness gained".
+Where the numerical constants are given data: $0.0013151$ and $0.0025205$ are utility score associated with a single day of hospitalisation with or without severe complications; $168.19$ and $113.61$ are cost (in £) of daily impatient stay for individuals who experience and who do not experience severe complications; and $201.47$ the total cost (in £) of the prophylaxis.
 
-The monetary net benefit represents the value of an intervention in monetary terms when a willingness to pay threshold for a unit of benefit (for example a measure of health outcome or QALY) and cost is known. when $t = 1$:
+#### 1.2 Monetary Net Benefit Function
+
+We model $\text{NB}_t(\boldsymbol{\theta})$ as follows:
+
+$$
+\text{NB}_t(\boldsymbol{\theta}) = k\mu_{et} - \mu_{ct}
+$$
+
+Using results from Section 1.1, under $t=1$, the above formula can be expanded to:
 
 $$
 \begin{align}
-u(e,c;t) &= nb_t = k\mu_{e} - \mu_{et} \\
-u(e,c;t) &= k*{p1 * (l1 * 0.0013151 + (365 - l1)) + (1 - p1) * (l0 * 0.0025205 + (365 - l0))} - {p1 * (168.19 * l1) + (1 - p1) * (113.61 * l0)}
+\text{NB}_1(\boldsymbol{\theta}) &= k\times\left\{\frac{1}{365}\left[p_1\times(l_1\times0.0013151 + (365 - l_1)) + (1 - p_1)\times(l_0\times0.0025205 + (365 - l_0))\right]\right\} \\
+&- \left\{p_1\times(l_1\times168.19) + (1 - p_1)\times(l_0\times113.61)\right\}
+\end{align}
+$$
+
+And under $t=2$, it can be expanded to:
+
+$$
+\begin{align}
+\text{NB}_2(\boldsymbol{\theta}) &= k\times\left\{\frac{1}{365}\left[p_2\times(l_1\times0.0013151 + (365-l_1)) + (1-p_2)\times(l_0\times0.0025205 + (365 - l_0))\right]\right\} \\
+&- \left\{p_2\times(l_1\times168.19)+(1-p_2)\times(l_0\times113.61)  + 201.47\right\}
 \end{align}
 $$
 
 ## Question 2
 
+#### Model Framework
+
+*REFERENCE TO CHAPTER 5 BMHE*
+
 #### Length of Staying in Hospital
 
-It's intuitive that the length in time is non-negative, and considering the mean length of stay in hospital for people without severe complications is 4.36 days with a standard deviation of 1.8 days (close to zero), modelling using symmetric distributions (e.g. normal) may cause bias due to the allowance of negativity. Therefore, we decided to use Gamma distribution to model this quantity.
-
-We know that for a $\text{Gamma}(\alpha, \beta)$ distribution, the mean and standard deviation
-
-In line $x = 2$
+The average $\mu_{ls}$ and standard deviation $\sigma_{ls}$ of the length of stay in hospital to recover from the surgery for people with condition $s$ are given above. We model length of stay as:
 
 $$
+l_t \sim \text{Gamma}(\alpha_s, \beta_s)
+$$
+
+Where $\alpha_s = \frac{\mu_s^2}{\sigma_s^2}$ and $\beta_t = \frac{\mu_s}{\sigma_s^2}$, where the parameters are defined using the data presented above. The exact formation is:
 
 $$
+l_0 \sim \text{Gamma}(5.867, 1.346) \qquad l_1 \sim \text{Gamma}(256.915, 7.633)
+$$
+
+#### Population Average Cost & Benefits
+
+## Question 3
+
+According to the summary,the expected net benefit of treatment is greater than of status quo, EIB is positive (139.9) under the willingness to pay threhold (k = 100), hence the intervention (t=2) is more cost-effective than the control group (t=1).
+
+The value of CEAC suggests that that the intervention is cost-effective compared with the alternative, given the data and for a given value of the maximum acceptable ratio is 0.890583.
+
+The value of ICER is negative (ICER =-13.315 ) and it is located at the South-East quardrant on CE plane.
+
+The location of ICER suggests that a larger effectiveness can be caused by a lower cost, so we can deduce that the intervention is generally cost-effective and the status quo is preferred for the willingness to pay threshold (k=100).
+
+An EIB plot is conducted in order to comfirm the range of willingness to pay. According to the EIB plot, the EIB is always positive if k\>0 which suggests that the intervention (prophylaxis antibiotic) is cost-effective no matter there is willing to pay or not.
+
+Besides, from the contour plot, a negative linear correlation is detected between incremental effectiveness and incremental cost: the greater incremental effectiveness, the less incremental cost.
+
+Overall, As a decision maker of the healthcare system, we would like to decide implement this treatment in the future.
+
+\newpage
+
+## Declaration of ownership
+
+We are aware of the UCL Statistical Science Department's regulations on plagiarism for assessed coursework and are aware of UCL's policy on plagiarism and collusion. We also confirm that the work hereby submitted has been conducted in a collaborative way among all the members of the team.
+
+By submitting the R and/or BUGS scripts as detailed in the text of the ICA, we hereby affirm that the work has entirely been carried out by us.

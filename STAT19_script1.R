@@ -15,15 +15,15 @@ T <- 2
 # Informative prior on incidence of complications in "healthy" adults
 m.p1 <- 0.08         # original mean length for patients with complications
 s.p1 <- 0.02         # original sd length for patients with complications
-a.p1 <-  m.p1*((1-m.p1)*m.p1/s.p1^2-1)
-b.p1 <-  (1-m.p1)*((1-m.p1)*m.p1/s.p1^2-1)
+a.p1 <- m.p1*((1-m.p1)*m.p1/s.p1^2-1)
+b.p1 <- (1-m.p1)*((1-m.p1)*m.p1/s.p1^2-1)
 
 # Evidence synthesis on effectiveness of antibiotics prophylaxis vs status quo
-r0 <- r1 <- n0 <- n1 <- numeric()   # defines observed cases & sample sizes
-r0 <- 37
-r1 <- 19
-n0 <- 161
-n1 <- 166
+r1 <- r2 <- n1 <- n2 <- numeric()   # defines observed cases & sample sizes
+r1 <- 37
+r2 <- 19
+n1 <- 161
+n2 <- 166
 
 # Data on costs
 unit.cost.comp <- 168.19  # unit (daily) cost of NI
@@ -51,21 +51,19 @@ tau.l.no <- 1/sigma.l.no^2    # precision time to recovery (log scale)
 
 # Parameters of unstructured effects
 mean.delta <- 0
-sd.delta <- sqrt(10000)
-tau.delta <- 1/sd.delta^2
+tau.delta <- 1e-2
 mean.alpha <- 0
-sd.alpha <- sqrt(10000)
-prec.alpha <- 1/sd.alpha^2
+prec.alpha <- 1e-2
 
 # Prepares to launch OpenBUGS
-library(R2OpenBUGS)
+# library(R2OpenBUGS)
 
 # a.gamma.comp = a.gamma.comp, b.gamma.comp = b.gamma.comp, a.gamma.no = a.gamma.no, b.gamma.no = b.gamma.no,
 # Creates the data list
-data <- list(r0=r0,r1=r1,n0=n0,n1=n1,a.p1=a.p1,b.p1=b.p1,
-             mu.l.comp=mu.l.comp,tau.l.comp=tau.l.comp,mu.l.no=mu.l.no,tau.l.no=tau.l.no,
-             mean.alpha=mean.alpha,prec.alpha=prec.alpha,
-             mean.delta=mean.delta,tau.delta=tau.delta)
+data <- list(r1 = r1, r2 = r2, n1 = n1, n2 = n2, a.p1 = a.p1, b.p1 = b.p1,
+             mu.l.comp = mu.l.comp, tau.l.comp = tau.l.comp, mu.l.no = mu.l.no, tau.l.no = tau.l.no,
+             mean.alpha = mean.alpha, prec.alpha = prec.alpha,
+             mean.delta = mean.delta, tau.delta = tau.delta)
 
 # Points to the txt file where the OpenBUGS model is saved
 filein <- "code.txt"
@@ -88,28 +86,34 @@ n.thin <- 1
 library(R2jags)
 model_jags <- jags(data=data, inits=NULL,parameters.to.save=params,model.file=filein,
                    n.chains=2, n.iter, n.burnin, n.thin, DIC=TRUE)
+
+model_bugs <- R2OpenBUGS::bugs(data=data, inits=NULL,parameters.to.save=params,model.file=filein,
+                               n.chains=2, n.iter, n.burnin, n.thin, DIC=TRUE)
+
 print(model_jags, digits=3, intervals = c(0.025, 0.975))
 
 # Convergence check through traceplots (example for node p1)
 plot(model_jags$BUGSoutput$sims.list$p1[1:9000],t="l",col="blue",ylab="p1")
 points(model_jags$BUGSoutput$sims.list$p1[9001:18000],t="l",col="red")
+
 # Attaches the es object to the R workspace (to use the posteriors for the economic analysis)
 attach.jags(model_jags)
 
 # Runs economic analysis 
 # cost of treatment
 c <- e <- matrix(NA, n.sims, T)
-c[,1] <- p1*unit.cost.comp*mu.l.comp + (1-p1)*unit.cost.no*mu.l.no
-c[,2] <- c.anti + p2*unit.cost.comp*mu.l.comp + (1-p2)*unit.cost.no*mu.l.no
-e[,1] <- p1*(365-mu.l.comp + mu.l.comp*unit.e.comp) + (1-p1)*(365-mu.l.no + mu.l.no*unit.e.no)
-e[,2] <- p2*(365-mu.l.comp + mu.l.comp*unit.e.comp) + (1-p2)*(365-mu.l.no + mu.l.no*unit.e.no)
+c[,1] <- p1*unit.cost.comp*l.comp + (1 - p1)*unit.cost.no*l.no
+c[,2] <- c.anti + p2*unit.cost.comp*l.comp + (1 - p2)*unit.cost.no*l.no
+e[,1] <- p1*(365 - l.comp + l.comp*unit.e.comp) + (1 - p1)*(365 - l.no + mu.l.no*unit.e.no)
+e[,2] <- p2*(365 - l.comp + l.comp*unit.e.comp) + (1 - p2)*(365 - l.no + mu.l.no*unit.e.no)
 
 library(BCEA)
-treats <- c("status quo","prophylatic antibiotics")
-m <- bcea(e,c,ref=2,treats,Kmax=10000, plot = TRUE)
-ceplane.plot(m,wtp=10000)
+treats <- c("status quo","antibiotics prophylaxis")
+he <- bcea(e, c, ref = 2, treats, Kmax = 100, plot = TRUE)
 
-#NBt <- function(a,b,k) {
-#  return NB1 <- k*mu.e1-mu.c1
-#  NB2 <- k*mu.e2-mu.c2
-#}
+ceplane.plot(he,wtp = 1000)
+contour(he)
+# k=10000
+# EIB <- k*mean(he$delta_e$`status quo`)-mean(he$delta_e$`status quo`)
+eib.plot(he, plot.cri = FALSE)
+summary(he)

@@ -74,7 +74,6 @@ model.bugs <- R2OpenBUGS::bugs(
 	n.burnin = 100,
 	n.thin = 1,
 	DIC = TRUE
-	# bugs.seed = 3
 	# debug = TRUE
 )
 print(model.bugs)
