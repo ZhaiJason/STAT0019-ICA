@@ -22,16 +22,17 @@ rm(rct.1, rct.2)
 
 # Prior of population rate of complication p0 (Beta with specified parameters)
 mu.p1 <- 0.08 # (0.04 + 0.12) / 2
-sd.p1 <- 0.015 # 0.08 / 3
+sd.p1 <- 0.015 # Approximate value sd, so the specified range is within +-3 sd
 shape1.p1 <- round(mu.p1 * ((1 - mu.p1) * mu.p1 / sd.p1^2 - 1)) # alpha
 shape2.p1 <- round((1 - mu.p1) * ((1 - mu.p1) * mu.p1 / sd.p1^2 - 1)) # beta
 rm(mu.p1, sd.p1)
 
+# Plot for specified Beta(26,300)
 # x <- seq(0,0.2,0.001)
 # plot(x, dbeta(x, shape1.p1, shape2.p1), type = "l")
-# plot(x, dbeta(x, 29, 320), type = "l") # Eric's prior
 # abline(v = c(0.04, 0.08, 0.12))
 # pbeta(0.12, shape1.p1, shape2.p1) - pbeta(0.04, shape1.p1, shape2.p1)
+# pbeta(0.12, 14.64, 168.36) - pbeta(0.04, 14.64, 168.36)
 
 # Unstructured effects (using heavy tailed normal prior)
 mu.alpha <- 0
@@ -76,7 +77,7 @@ model.bugs <- R2OpenBUGS::bugs(
 	DIC = TRUE
 	# debug = TRUE
 )
-print(model.bugs)
+print(model.bugs, digits = 3)
 
 # model.jags <- R2jags::jags(
 # 	data = data, inits = NULL, parameters.to.save = params, model.file = filein,
@@ -123,4 +124,5 @@ he <- bcea(e, c, ref = 2, c("status quo", "treatment"), Kmax = 100)
 ceplane.plot(he, wtp = 100)
 # eib.plot(he, plot.cri = TRUE)
 # contour(he)
+# ceac.plot(he)
 # summary(he)
