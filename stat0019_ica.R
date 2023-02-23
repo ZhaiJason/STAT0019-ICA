@@ -90,16 +90,6 @@ print(model.bugs, digits = 3)
 # )
 # print(model.jags)
 
-# Trace Plots ==================================================================
-
-# par(mfrow = c(4, 2))
-# for (i in params) {
-# 	plot(model.bugs$sims.array[ , 1, i], type = "l", col = "red",
-# 		 main = paste("Traceplot for", i), ylab = "value")
-# 	lines(model.bugs$sims.array[ , 2, i], col = "blue")
-# }
-# par(mfrow = c(1, 1))
-
 # CEA ==========================================================================
 
 ## Reading output --------------------------------------------------------------
