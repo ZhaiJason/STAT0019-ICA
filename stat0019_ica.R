@@ -13,7 +13,7 @@ rm(rct_data)
 
 ## Model Setup information -----------------------------------------------------
 
-# Effectiveness study data
+# Placebo-controlled effectiveness study data
 y1 <- sum(rct.1)
 y2 <- sum(rct.2)
 n1 <- length(rct.1)
@@ -34,7 +34,7 @@ rm(mu.p1, sd.p1)
 # pbeta(0.12, shape1.p1, shape2.p1) - pbeta(0.04, shape1.p1, shape2.p1)
 # pbeta(0.12, 14.64, 168.36) - pbeta(0.04, 14.64, 168.36)
 
-# Unstructured effects (using heavy tailed normal prior)
+# Minimally informative prior of alpha and delta (large variance normal prior)
 mu.alpha <- 0
 mu.delta <- 0
 tau.alpha <- 1e-2
@@ -62,9 +62,7 @@ data <- list(
 
 filein <- "rct_mod.txt"
 
-params <- c(
-	"p1", "p2", "rho", "alpha", "delta", "l0", "l1"
-)
+params <- c("p1", "p2", "rho", "alpha", "delta", "l0", "l1")
 
 ## Running Model ---------------------------------------------------------------
 
@@ -88,6 +86,16 @@ print(model.bugs, digits = 3)
 # 	DIC = TRUE
 # )
 # print(model.jags)
+
+# Trace Plots ==================================================================
+
+# par(mfrow = c(4, 2))
+# for (i in params) {
+# 	plot(model.bugs$sims.array[ , 1, i], type = "l", col = "red",
+# 		 main = paste("Traceplot for", i), ylab = "value")
+# 	lines(model.bugs$sims.array[ , 2, i], col = "blue")
+# }
+# par(mfrow = c(1, 1))
 
 # CEA ==========================================================================
 
@@ -115,14 +123,11 @@ c[ ,1] <- p1 * (168.19 * l1) + (1 - p1) * (113.61 * l0)
 c[ ,2] <- p2 * (168.19 * l1) + (1 - p2) * (113.61 * l0) + 201.47
 e[ ,1] <- (p1 * (l1 * 0.0013151 + (365 - l1)) + (1 - p1) * (l0 * 0.0025205 + (365 - l0)))
 e[ ,2] <- (p2 * (l1 * 0.0013151 + (365 - l1)) + (1 - p2) * (l0 * 0.0025205 + (365 - l0)))
-# c <- c / 365
-# e <- e / 365
 
 library(BCEA)
-he <- bcea(e, c, ref = 2, c("status quo", "treatment"), Kmax = 100)
-# plot(he)
-ceplane.plot(he, wtp = 100)
-# eib.plot(he, plot.cri = TRUE)
-# contour(he)
-# ceac.plot(he)
-# summary(he)
+he <- bcea(e, c, ref = 2, c("status quo", "antibiotics prophylaxis"), Kmax = 1000)
+ceplane.plot(he, wtp = 1000)
+eib.plot(he, plot.cri = TRUE)
+contour(he)
+ceac.plot(he)
+summary(he)

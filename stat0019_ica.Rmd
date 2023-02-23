@@ -1,6 +1,6 @@
 ---
-title: "stat0019_ica"
-author: "19038456 20019563 22095670"
+title: "Cost-Effectiveness Analysis on Prophylaxis Treatment"
+author: "Student No: 19038456 20019563 22095670"
 date: '`r Sys.Date()`'
 output:
   pdf_document: default
@@ -12,22 +12,28 @@ knitr::opts_chunk$set(echo = FALSE, fig.align = "center")
 source("stat0019_ica.R")
 ```
 
-## Question 1
+\newpage
+
+\* All referenced plots are stored in Appendix A at the end of the report.
+
+# Question 1
 
 We have two treatment arms where $t=1=\text{status quo}=\text{no prophylaxis}$ and $t=2=\text{active intervention}=\text{antibiotics prophylaxis}$.
 
 For people with condition $s$, where $s=1$ represents experienced severe complication and $s=0$ not experienced, the lengths of stay in hospital is denoted $l_s$.
 
-For treatment arm $t$, the average cost and average QALYs are denoted $\mu_{ct}$ and $\mu_{et}$, respectively; the probability of severe complications is denoted $p_t$; and the monetary net benefit function is denoted $\text{NB}_t(\boldsymbol{\theta})$, where $\boldsymbol{\theta}=(e,c;p_t,l_s,k)$ and $k$ is the willingness to pay (i.e. the maximum amount people are willing to contribute in order to gain one extra unit of QALY).
+For treatment arm $t$, the yearly average cost and average QALYs are denoted $\mu_{ct}$ and $\mu_{et}$, respectively; the probability of severe complications is denoted $p_t$; and the monetary net benefit function is denoted $\text{NB}_t(\boldsymbol{\theta})$, where $\boldsymbol{\theta}=(p_t,l_s)$ and $k$ is the willingness to pay (in £s per unit QALY gained).
 
-#### 1.1 Average Cost & Average QALYs
+### 1.1 Average Cost & Average QALYs
 
 As instructed, we model $\mu_{ct}$ and $\mu_{et}$, for $t=1$, as follows:
 
 $$
 \begin{aligned}
 \mu_{e1} &= p_1\times(l_1\times0.0013151 + (365 - l_1)) + (1 - p_1)\times(l_0\times0.0025205 + (365 - l_0)) \\
-\mu_{c1} &= p_1\times(l_1\times168.19) + (1 - p_1)\times(l_0\times113.61)
+         &= p_1\times(l_1\times-0.9986849+l_0\times0.9974795) - l_0\times0.9974795+365 \\
+\mu_{c1} &= p_1\times(l_1\times168.19) + (1 - p_1)\times(l_0\times113.61) \\
+         &= p_1\times(l_1\times168.19-l_0\times113.61)+l_0\times113.61
 \end{aligned}
 $$
 
@@ -36,13 +42,15 @@ And for $t=2$, as follows:
 $$
 \begin{aligned}
 \mu_{e2} &= p_2\times(l_1\times0.0013151 + (365-l_1)) + (1-p_2)\times(l_0\times0.0025205 + (365 - l_0)) \\
-\mu_{c2} &= p_2\times(l_1\times168.19)+(1-p_2)\times(l_0\times113.61)  + 201.47
+         &= p_2\times(l_1\times-0.9986849 + l_0\times0.9974795)-l_0\times0.9974795+365 \\
+\mu_{c2} &= p_2\times(l_1\times168.19)+(1-p_2)\times(l_0\times113.61)  + 201.47 \\
+         &= p_2\times(l_1\times168.19-l_0\times113.61)+l_0\times113.61 + 201.47
 \end{aligned}
 $$
 
 Where the numerical constants are given data: $0.0013151$ and $0.0025205$ are utility score associated with a single day of hospitalisation with or without severe complications; $168.19$ and $113.61$ are cost (in £) of daily impatient stay for individuals who experience and who do not experience severe complications; and $201.47$ the total cost (in £) of the prophylaxis.
 
-#### 1.2 Monetary Net Benefit Function
+### 1.2 Monetary Net Benefit Function
 
 We model $\text{NB}_t(\boldsymbol{\theta})$ as follows:
 
@@ -70,18 +78,11 @@ $$
 
 \newpage
 
-## Question 2
+# Question 2
 
-#### 2.1 Model Description
+### 2.1 Model Description
 
-The model contains two parts. First, we build a module to estimate the incidence of getting severe complication in the general population $p_1$. Given that this probability is estimated to be $4\%$ to $12\%$, we encoded this information to an informative $\text{Beta}(26,300)$ prior. The distribution is defined on the probability support $(0,1)$ and the specified parameters allows $>99\%$ chance to fall within range $(4\%,12\%)$, shown by the plot below:
-
-```{r 2.1, fig.width = 4, fig.height = 3}
-x <- seq(0,0.2,0.001)
-plot(x, dbeta(x, shape1.p1, shape2.p1), type = "l",
-	 main = "Beta(26,300) Prior", xlab = "", ylab = "probability density")
-abline(v = c(0.04, 0.12), col = "blue")
-```
+The model contains two parts. First, we build a module to estimate the probability of getting severe complication in the general population $p_1$. We are given that this probability is estimated to be between $4\%$ and $12\%$. We encoded this information to an informative $\text{Beta}(26,300)$ prior. The distribution is defined on the probability support $(0,1)$ and the specified parameters allows $>99\%$ chance to fall within range $(4\%,12\%)$ (plot see Appendix A).
 
 The second module used the data from the placebo-controlled randomised study. For treatment arm $t=1,2$, we have available data on $y_t$, the number of people who experienced severe complication, and $n_t$, the number of patients in the arm. We model this data using a Binomial specification:
 
@@ -95,11 +96,13 @@ $$
 \text{logit}(\pi_1)=\alpha\qquad\text{logit}(\pi_2)=\alpha+\delta
 $$
 
-Where $\alpha$ and $\beta$ have less informative prior distributions:
+Where $\alpha$ is the baseline probability of severe complications on logit scale and $\delta$ is the probability increment under prophylaxis treatment on logit scale. Both of them are modelled using less informative prior distributions:
 
 $$
 \alpha\sim\text{Normal}(0,10000)\qquad\delta\sim\text{Normal}(0, 10000)
 $$
+
+Performing the addition of the probability measures on the logit scale ensures that the resulted sum after the inverse logit transformation ($\pi_2$), will always lie within the probability support $(0,1)$.
 
 We combine the two modules to derive an estimation for $p_2$, the probability of experiencing severe complication in the population treated with antibiotics prophylaxis. The odds ratio $\rho$ for $t=2$ against $t=1$ is:
 
@@ -113,59 +116,99 @@ $$
 p_2=\frac{\rho p_1/(1-p_1)}{1+\rho p_1(1-p_1)}
 $$
 
-The above framework is visualised using the graph below:
+The above framework is visualised using the graph below, with solid arrows denoting probabilistic relationships and dashed arrows denoting logical relationships:
 
-![](rct_model.png)
+<img src="rct_model.png" alt="PSA Output" style="zoom: 50%;" />
 
-#### 2.2 Length of Staying in Hospital
+### 2.2 Length of Staying in Hospital
 
-The average $\mu_{ls}$ and standard deviation $\sigma_{ls}$ of the length of stay in hospital to recover from the surgery for people with condition $s$ are given above. We model length of stay as:
+The average $\mu_{ls}$ and standard deviation $\sigma_{ls}$ of the length of stay in hospital to recover from the surgery for people with condition $s$ are given above. Since the length of stay should be non-negative, we decided to describe it using Gamma distribution, which is defined on $(0,\infty)$. We model length of stay as:
 
 $$
 l_t \sim \text{Gamma}(\alpha_s, \beta_s)
 $$
 
-Where $\alpha_s = \frac{\mu_s^2}{\sigma_s^2}$ and $\beta_t = \frac{\mu_s}{\sigma_s^2}$. This transformation allows the mean and variance of the Gamma distribution to be $\mu_s$ and $\sigma_s^2$, respectively. The parameters are defined using the data presented above. The realised formation is:
+Where $\alpha_s = \frac{\mu_s^2}{\sigma_s^2}$ and $\beta_t = \frac{\mu_s}{\sigma_s^2}$. This transformation allows the mean and variance of the Gamma distribution to match the given $\mu_s$ and $\sigma_s^2$, respectively. The parameters are defined using the data presented above. The realised forms for each arm are:
 
 $$
 l_0 \sim \text{Gamma}(5.867, 1.346) \qquad l_1 \sim \text{Gamma}(256.915, 7.633)
 $$
 
-#### 2.3 Population Average Cost & Benefits
+### 2.3 Population Average Cost & Benefits
 
 The model for $\mu_{et}$ and $\mu_{ct}$ are direct implementation of formulas derived in Section 1.1. The results will be presented in the following sections.
 
-#### 2.4 Model Convergence
+### 2.4 Model Convergence
+
+For our model, when performing Gibbs Sampling via BUGS, we use $10,000$ iterations with $2$ chains, each with $100$ burn-in, which gave us $19,800$ output samples for the analysis. The model result is displayed below:
 
 ```{r 2.4}
-
+print(model.bugs, digits = 3)
 ```
 
-## Question 3
+We see for all parameters of interest, $\hat{R}$ is below $1.1$ and is very close to $1$; the effective sample size, `n.eff`, are all well above $4000$; and the resulted DIC measure also remains within an acceptable range. These criterion indicates our model's convergence.
 
-#### 3.1 Cost-Utility Analysis
+Traceplots of parameters (see Appendix A) indicate the two simulated chains are mostly overlapping and alternating in a consistent range of values, which is evidence of convergence.
+
+\newpage
+
+# Question 3
+
+Given the [recommendation from NICE](https://www.nice.org.uk/process/pmg6/chapter/assessing-cost-effectiveness), the maximum willingness to pay threshold in UK is £$30,000$ per QALY gained. In the primary analysis of the cost-effectiveness about the intervention, we will set an arbitary maximum willingness to pay of $k=1000$. The summary output using R package `BCEA` is presented below:
 
 ```{r 3.1}
 summary(he)
 ```
 
-According to the summary,the expected net benefit of treatment is greater than of status quo, EIB is positive (139.9) under the willingness to pay threshold (k = 100), hence the intervention (t=2) is more cost-effective than the control group (t=1).
+According to the summary, the expected net benefit is greater for prophylaxis treatment group than status quo group. EIB is positive under the willingness to pay threshold ($k=1000$), hence the prophylaxis intervention ($t=2$) is more cost-effective than the status quo ($t=1$). Further, the value of ICER is `r round(as.numeric(he$icer),3)` with an optimal CEAC of `r max(he$ceac)`.
 
-The value of CEAC suggests that that the intervention is cost-effective compared with the alternative, given the data and for a given value of the maximum acceptable ratio is 0.890583.
+From the CE plane plot, ICER is located at the South-East quadrant on Cost-Effectiveness plane. The location of ICER suggests that, comparing to status quo, the new treatment leads to a larger effectiveness at a lower cost, suggesting the intervention is generally cost-effective and the prophylaxis treatment is preferred for any willingness to pay $k\geq0$.
 
-The value of ICER is negative (ICER =-13.315 ) and it is located at the South-East quadrant on CE plane.
+Additionally, the CE plane and contour plot show that incremental effectiveness and incremental cost are negatively correlated: greater incremental effectiveness tends to imply less incremental cost.
 
-The location of ICER suggests that a larger effectiveness can be caused by a lower cost, so we can deduce that the intervention is generally cost-effective and the status quo is preferred for the willingness to pay threshold (k=100).
+The EIB plot is conducted in order to check the range of willingness to pay. The result shows the EIB is positive even at zero willingness to pay. This provides additional support for the previous conclusion.
 
-An EIB plot is conducted in order to comfirm the range of willingness to pay. According to the EIB plot, the EIB is always positive if k\>0 which suggests that the intervention (prophylaxis antibiotic) is cost-effective no matter there is willing to pay or not.
+The value of CEAC indicates the probability that an intervention is cost-effective compared with the status quo, given the observed data and specified $k$. The CEAC plot shows the probability of cost-effectiveness is around $0.6$ without additional willingness to pay ($k = 0$). Further, the probability can be boosted to over $90\%$ by a small increase in the willingness to pay of less than £$200$. This marks that prophylaxis treatment is overall effective and highly affordable.
 
-Besides, from the contour plot, a negative linear correlation is detected between incremental effectiveness and incremental cost: the greater incremental effectiveness, the less incremental cost.
-
-Overall, As a decision maker of the healthcare system, we would like to decide implement this treatment in the future.
+Overall, as a decision maker of the healthcare system, we found the prophylaxis treatment beneficial and cost-effective, so we decide to implement it.
 
 \newpage
 
-## Declaration of Ownership
+# Appendix A
+
+```{r figures1}
+x <- seq(0,0.2,0.001)
+plot(x, dbeta(x, shape1.p1, shape2.p1), type = "l",
+	 main = "Figure 1: Beta(26,300) Prior for p1", xlab = "p1", ylab = "probability density")
+abline(v = c(0.04, 0.12), col = "blue")
+```
+
+\newpage
+
+```{r figures_traceplots, fig.height = 12, fig.width=10}
+par(mfrow = c(4, 2))
+for (i in params) {
+	plot(model.bugs$sims.array[ , 1, i], type = "l", col = "red",
+		 main = paste("Traceplot for", i), ylab = "value")
+	lines(model.bugs$sims.array[ , 2, i], col = "blue")
+}
+```
+
+\newpage
+
+```{r figures2, fig.height=8, fig.width=10}
+par(mfrow = c(2,2))
+ceplane.plot(he, wtp = 1000, main = "Figure 2: Cost-Effectiveness Plane")
+contour(he, main = "Figure 3: Contour Plot")
+eib.plot(he, main = "Figure 4: Expected Incremental Benefit")
+ceac.plot(he, main = "Figure 5: Cost-Effectiveness Acceptability Curve")
+abline(h = 0.9, col = "red")
+legend("bottomright", legend = "0.9", lty = 1, col = "red")
+```
+
+\newpage
+
+# Declaration of Ownership
 
 We are aware of the UCL Statistical Science Department's regulations on plagiarism for assessed coursework and are aware of UCL's policy on plagiarism and collusion. We also confirm that the work hereby submitted has been conducted in a collaborative way among all the members of the team.
 
