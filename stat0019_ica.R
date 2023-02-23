@@ -1,5 +1,8 @@
 # Data Input ===================================================================
 
+# Setting working directory to current file location
+setwd(getwd())
+
 # Read file and inspect
 rct_data <- read.csv("rct_data.csv")
 # head(rct_data)
