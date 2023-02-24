@@ -22,7 +22,7 @@ We have two treatment arms where $t=1=\text{status quo}=\text{no prophylaxis}$ a
 
 For people with condition $s$, where $s=1$ represents experienced severe complication and $s=0$ not experienced, the lengths of stay in hospital is denoted $l_s$.
 
-For treatment arm $t$, the yearly average cost and average QALYs are denoted $\mu_{ct}$ and $\mu_{et}$, respectively; the probability of severe complications is denoted $p_t$; and the monetary net benefit function is denoted $\text{NB}_t(\boldsymbol{\theta})$, where $\boldsymbol{\theta}=(p_t,l_s)$ and $k$ is the willingness to pay (in £s per unit QALY gained).
+For treatment arm $t$, the yearly average cost and average QALYs are denoted $\mu_{ct}$ and $\mu_{et}$, respectively; the probability of severe complications is denoted $p_t$; and the monetary net benefit function is denoted $\text{NB}_t(\boldsymbol{\theta})$, where $\boldsymbol{\theta}=(p_t,l_s,k)$ and $k$ is the willingness to pay (in £s per unit QALY gained).
 
 ### 1.1 Average Cost & Average QALYs
 
@@ -82,7 +82,9 @@ $$
 
 ### 2.1 Model Description
 
-The model contains two parts. First, we build a module to estimate the probability of getting severe complication in the general population $p_1$. We are given that this probability is estimated to be between $4\%$ and $12\%$. We encoded this information to an informative $\text{Beta}(26,300)$ prior. The distribution is defined on the probability support $(0,1)$ and the specified parameters allows $>99\%$ chance to fall within range $(4\%,12\%)$ (plot see Appendix A).
+The framework described below takes references from *Bayesian Methods in Health Economics* Section 5.3.1.
+
+The model contains two parts. First, we build a module to estimate the probability of getting severe complication in the general population $p_1$. We are given that this probability is estimated to be between $4\%$ and $12\%$. We encoded this information to an informative $\text{Beta}(26,300)$ prior. The distribution is defined on the probability support $(0,1)$ and the specified parameters allow $p_1$ to have $>99\%$ chance to fall within range $(4\%,12\%)$ (plot see Appendix A).
 
 The second module used the data from the placebo-controlled randomised study. For treatment arm $t=1,2$, we have available data on $y_t$, the number of people who experienced severe complication, and $n_t$, the number of patients in the arm. We model this data using a Binomial specification:
 
@@ -90,13 +92,13 @@ $$
 y_t \sim \text{Binomial}(\pi_t,n_t)
 $$
 
-The parameter $\pi_t$ indicate the study and treatment specific chance of experiencing severe complications. Using logit specification, we model this as:
+The parameter $\pi_t$ indicate the group under treatment arm $t$'s probability of experiencing severe complications. Using logit specification, we model this as:
 
 $$
 \text{logit}(\pi_1)=\alpha\qquad\text{logit}(\pi_2)=\alpha+\delta
 $$
 
-Where $\alpha$ is the baseline probability of severe complications on logit scale and $\delta$ is the probability increment under prophylaxis treatment on logit scale. Both of them are modelled using less informative prior distributions:
+Where $\alpha$ is the baseline probability of severe complications on logit scale and $\delta$ is the probability increment under prophylaxis treatment on logit scale. Both of them are modelled using minimally informative prior distributions:
 
 $$
 \alpha\sim\text{Normal}(0,10000)\qquad\delta\sim\text{Normal}(0, 10000)
@@ -113,12 +115,14 @@ $$
 Transforming this gives us the expression for the required probability $p_2$ as:
 
 $$
-p_2=\frac{\rho p_1/(1-p_1)}{1+\rho p_1(1-p_1)}
+p_2=\frac{\rho p_1/(1-p_1)}{1+\rho p_1/(1-p_1)}
 $$
 
-The above framework is visualised using the graph below, with solid arrows denoting probabilistic relationships and dashed arrows denoting logical relationships:
+\newpage
 
-<img src="rct_model.png" alt="PSA Output" style="zoom: 50%;" />
+The above framework is visualised using the graph below, with solid arrows denoting probabilistic relationships and dashed arrows denoting logical dependences:
+
+![](rct_model.png)
 
 ### 2.2 Length of Staying in Hospital
 
@@ -138,6 +142,8 @@ $$
 
 The model for $\mu_{et}$ and $\mu_{ct}$ are direct implementation of formulas derived in Section 1.1. The results will be presented in the following sections.
 
+\newpage
+
 ### 2.4 Model Convergence
 
 For our model, when performing Gibbs Sampling via BUGS, we use $10,000$ iterations with $2$ chains, each with $100$ burn-in, which gave us $19,800$ output samples for the analysis. The model result is displayed below:
@@ -154,13 +160,13 @@ Traceplots of parameters (see Appendix A) indicate the two simulated chains are 
 
 # Question 3
 
-Given the [recommendation from NICE](https://www.nice.org.uk/process/pmg6/chapter/assessing-cost-effectiveness), the maximum willingness to pay threshold in UK is £$30,000$ per QALY gained. In the primary analysis of the cost-effectiveness about the intervention, we will set an arbitary maximum willingness to pay of $k=1000$. The summary output using R package `BCEA` is presented below:
+Given the [*recommendation from NICE*](https://www.nice.org.uk/process/pmg6/chapter/assessing-cost-effectiveness), the maximum willingness to pay threshold in UK is £$30,000$ per QALY gained. In the primary analysis of the cost-effectiveness about the intervention, we will set an arbitrary maximum willingness to pay of $k=1000$. The summary output using R package `BCEA` is presented below:
 
 ```{r 3.1}
 summary(he)
 ```
 
-According to the summary, the expected net benefit is greater for prophylaxis treatment group than status quo group. EIB is positive under the willingness to pay threshold ($k=1000$), hence the prophylaxis intervention ($t=2$) is more cost-effective than the status quo ($t=1$). Further, the value of ICER is `r round(as.numeric(he$icer),3)` with an optimal CEAC of `r max(he$ceac)`.
+According to the summary, the expected net benefit is greater for prophylaxis treatment group than status quo group. EIB is positive under the willingness to pay threshold ($k=1000$), hence the prophylaxis intervention ($t=2$) is more cost-effective than the status quo ($t=1$). Further, the value of ICER is `r round(as.numeric(he$ICER,3))` with an optimal CEAC of `r round(max(he$ceac),3)`.
 
 From the CE plane plot, ICER is located at the South-East quadrant on Cost-Effectiveness plane. The location of ICER suggests that, comparing to status quo, the new treatment leads to a larger effectiveness at a lower cost, suggesting the intervention is generally cost-effective and the prophylaxis treatment is preferred for any willingness to pay $k\geq0$.
 

@@ -54,6 +54,7 @@ beta.l0 <- mu.l0 / sd.l0^2
 beta.l1 <- mu.l1 / sd.l1^2
 rm(mu.l0, mu.l1, sd.l0, sd.l1)
 
+# Specify data input for running BUGS/JAGS sampler
 data <- list(
 	y1 = y1, y2 = y2, n1 = n1, n2 = n2,
 	shape1.p1 = shape1.p1, shape2.p1 = shape2.p1,
@@ -63,8 +64,10 @@ data <- list(
 	alpha.l1 = alpha.l1, beta.l1 = beta.l1
 )
 
+# Specify BUGS/JAGS script
 filein <- "rct_mod.txt"
 
+# Specify parameters to sample
 params <- c("p1", "p2", "rho", "alpha", "delta", "l0", "l1")
 
 ## Running Model ---------------------------------------------------------------
@@ -89,6 +92,15 @@ print(model.bugs, digits = 3)
 # 	DIC = TRUE
 # )
 # print(model.jags)
+
+## Trace plots -----------------------------------------------------------------
+
+# par(mfrow = c(4, 2))
+# for (i in params) {
+# 	plot(model.bugs$sims.array[ , 1, i], type = "l", col = "red",
+# 		 main = paste("Traceplot for", i), ylab = "value")
+# 	lines(model.bugs$sims.array[ , 2, i], col = "blue")
+# }
 
 # CEA ==========================================================================
 
